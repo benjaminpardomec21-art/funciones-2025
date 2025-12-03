@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Stock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Estilos básicos -->
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+    }
+    header {
+      background: #111827;
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    header .user-info {
+      font-size: 0.9rem;
+    }
+    header button {
+      margin-left: 0.5rem;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+      border-radius: 999px;
+      background: #f97316;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    nav {
+      background: #1f2937;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+    }
+    nav button {
+      flex: 1;
+      border: none;
+      padding: 0.5rem;
+      background: #374151;
+      color: #e5e7eb;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    nav button.active {
+      background: #f97316;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    main {
+      padding: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      margin-bottom: 1rem;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem 1rem;
+      align-items: flex-end;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+      color: #4b5563;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.45rem 0.55rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 1px #f97316;
+    }
+    .full-width {
+      grid-column: 1 / -1;
+    }
+    .btn-primary {
+      border: none;
+      padding: 0.6rem;
+      border-radius: 999px;
+      background: #f97316;
+      color: #111827;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-secondary {
+      border: none;
+      padding: 0.6rem;
+      border-radius: 999px;
+      background: #e5e7eb;
+      color: #111827;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .view {
+      display: none;
+    }
+    .view.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.45rem 0.4rem;
+      text-align: left;
+    }
+    th {
+      background: #f9fafb;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: #6b7280;
+      letter-spacing: 0.04em;
+    }
+    tr {
+      cursor: pointer;
+    }
+    tr:hover {
+      background: #f3f4f6;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .status-low {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .status-high {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: #e5e7eb;
+      color: #374151;
+      margin-left: 0.25rem;
+    }
+
+    .msg {
+      margin-top: 0.25rem;
+      font-size: 0.8rem;
+    }
+    .msg-ok {
+      color: #166534;
+    }
+    .msg-error {
+      color: #b91c1c;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      max-width: 600px;
+      width: 92%;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.3);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .modal-header button {
+      border: none;
+      background: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .small-text {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+      nav button {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+
+  <!-- Chart.js para gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Librería para leer QR con la cámara -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
+  <!-- Librería para generar códigos QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>Gestión de Stock</h1>
+  <div class="user-info">
+    <span id="currentUserLabel">No autenticado</span>
+    <button id="logoutBtn" style="display:none;">Cerrar sesión</button>
+  </div>
+</header>
+
+<nav id="mainNav" style="display:none;">
+  <button data-view="view-movimientos" class="active">Ingresos / Retiros</button>
+  <button data-view="view-stock">Listado de Stock</button>
+</nav>
+
+<main>
+  <!-- Vista de autenticación -->
+  <section id="view-auth" class="view active">
+    <div class="card">
+      <h2>Registro</h2>
+      <form id="registerForm">
+        <div>
+          <label for="regUsername">Usuario</label>
+          <input type="text" id="regUsername" required />
+        </div>
+        <div>
+          <label for="regPassword">Contraseña</label>
+          <input type="password" id="regPassword" required />
+        </div>
+        <div class="full-width">
+          <button type="submit" class="btn-primary">Crear usuario</button>
+          <div id="registerMsg" class="msg"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Iniciar sesión</h2>
+      <form id="loginForm">
+        <div>
+          <label for="loginUsername">Usuario</label>
+          <input type="text" id="loginUsername" required />
+        </div>
+        <div>
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" required />
+        </div>
+        <div class="full-width">
+          <button type="submit" class="btn-primary">Entrar</button>
+          <div id="loginMsg" class="msg"></div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Vista de movimientos -->
+  <section id="view-movimientos" class="view">
+    <div class="card">
+      <h2>Crear / Editar ítem de stock</h2>
+      <form id="itemForm">
+        <div>
+          <label for="itemName">Nombre del ítem</label>
+          <input type="text" id="itemName" required placeholder="Ej: Cable 2,5mm" />
+        </div>
+        <div>
+          <label for="itemDesc">Descripción (opcional)</label>
+          <input type="text" id="itemDesc" placeholder="Color, medida, etc." />
+        </div>
+        <div>
+          <label for="itemMin">Stock mínimo</label>
+          <input type="number" id="itemMin" min="0" value="0" required />
+        </div>
+        <div>
+          <label for="itemMax">Stock máximo</label>
+          <input type="number" id="itemMax" min="0" value="100" required />
+        </div>
+        <div>
+          <label for="itemInitStock">Stock inicial</label>
+          <input type="number" id="itemInitStock" min="0" value="0" required />
+        </div>
+        <div>
+          <label for="itemPrice">Precio unitario de 1 unidad (opcional)</label>
+          <input type="number" id="itemPrice" min="0" step="0.01" placeholder="Ej: 15000" />
+        </div>
+        <div>
+          <label for="itemPriceMode">Tipo de precio</label>
+          <select id="itemPriceMode">
+            <option value="with">Precio con IVA</option>
+            <option value="without">Precio sin IVA</option>
+          </select>
+        </div>
+        <div class="full-width small-text" id="itemPriceInfo"></div>
+        <div class="full-width">
+          <button type="submit" class="btn-primary">Guardar ítem</button>
+          <button type="button" id="clearItemForm" class="btn-secondary">Limpiar</button>
+          <div id="itemMsg" class="msg"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Registrar ingreso / retiro</h2>
+      <form id="movementForm">
+        <div>
+          <label for="movementItem">Ítem</label>
+          <select id="movementItem" required></select>
+        </div>
+        <div>
+          <label for="movementType">Tipo de movimiento</label>
+          <select id="movementType" required>
+            <option value="in">Ingreso</option>
+            <option value="out">Retiro</option>
+          </select>
+        </div>
+        <div>
+          <label for="movementQty">Cantidad</label>
+          <input type="number" id="movementQty" min="1" value="1" required />
+        </div>
+        <div class="full-width">
+          <button type="submit" class="btn-primary">Registrar movimiento</button>
+          <button type="button" id="openScannerBtn" class="btn-secondary">Escanear código</button>
+          <div id="movementMsg" class="msg"></div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Card escáner -->
+    <div id="scannerCard" class="card" style="display:none;">
+      <h2>Escanear código del ítem</h2>
+      <p class="small-text">
+        Apunta la cámara al código QR del ítem. Al reconocerlo se seleccionará automáticamente en el formulario.
+      </p>
+      <div id="reader" style="width:100%; max-width:400px;"></div>
+      <p id="scanStatus" class="small-text"></p>
+      <button type="button" id="closeScannerBtn" class="btn-secondary">Cerrar escáner</button>
+    </div>
+  </section>
+
+  <!-- Vista de stock -->
+  <section id="view-stock" class="view">
+    <div class="card">
+      <h2>Listado de stock</h2>
+      <p class="small-text">
+        Haz clic en una fila para ver el gráfico de Ingresos vs Retiros y el código del ítem.
+      </p>
+      <div style="overflow-x:auto;">
+        <table id="stockTable">
+          <thead>
+          <tr>
+            <th>Ítem</th>
+            <th>Stock actual</th>
+            <th>Mín / Máx</th>
+            <th>Precio unit. (c/IVA)</th>
+            <th>Valor total stock (c/IVA)</th>
+            <th>Estado</th>
+          </tr>
+          </thead>
+          <tbody>
+          <!-- Filas generadas por JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sugerencias semanales -->
+    <div class="card" id="suggestionsCard">
+      <h2>Sugerencias semanales de stock</h2>
+      <p class="small-text">
+        Basadas en los movimientos de los últimos 7 días (ingresos y retiros).
+      </p>
+      <ul id="suggestionsList" class="small-text" style="padding-left:1.1rem;"></ul>
+    </div>
+  </section>
+</main>
+
+<!-- Modal gráfico + QR + precios -->
+<div id="chartModalOverlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="chartTitle">Detalle de ítem</h3>
+      <button id="closeChartModal">&times;</button>
+    </div>
+    <p id="chartSubtitle" class="small-text"></p>
+    <canvas id="itemChart" height="200"></canvas>
+    <div id="qrSection" style="margin-top:0.75rem;">
+      <p class="small-text">Código del ítem (para imprimir y escanear):</p>
+      <div id="qrCodeContainer"></div>
+      <p id="qrText" class="small-text"></p>
+      <p id="priceInfo" class="small-text"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- CONFIGURACIÓN ----
+  // IVA Chile aprox. 19%
+  const IVA_RATE = 0.19;
+
+  // ---- MODELO DE DATOS EN LOCALSTORAGE ----
+  const STORAGE_KEY = "stockAppData_v1";
+
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return {
+        users: [],
+        currentUser: null,
+        items: [] 
+        // item: {id, name, desc, min, max, stock, code,
+        //        priceNet, priceIVA, priceTotal, priceMode,
+        //        transactions:[{date, type, qty}]}
+      };
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      console.error("Error al parsear datos:", e);
+      return { users: [], currentUser: null, items: [] };
+    }
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  let appData = loadData();
+  let currentChart = null;
+  let html5QrCodeInstance = null;
+  let scannerRunning = false;
+
+  // ---- UTILIDADES ----
+  function genId() {
+    return Math.random().toString(36).substring(2, 10);
+  }
+
+  function ensureItemCodes() {
+    let updated = false;
+    appData.items.forEach(item => {
+      if (!item.code) {
+        item.code = "IT-" + genId().toUpperCase();
+        updated = true;
+      }
+    });
+    if (updated) saveData(appData);
+  }
+
+  ensureItemCodes();
+
+  function showMessage(el, text, type = "ok") {
+    el.textContent = text;
+    el.classList.remove("msg-ok", "msg-error");
+    if (type === "ok" && text) el.classList.add("msg-ok");
+    if (type === "error" && text) el.classList.add("msg-error");
+    if (!text) {
+      el.classList.remove("msg-ok", "msg-error");
+    }
+  }
+
+  function getItemById(id) {
+    return appData.items.find(i => i.id === id);
+  }
+
+  function formatCLP(value) {
+    return value.toLocaleString("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0
+    });
+  }
+
+  function updateCurrentUserUI() {
+    const label = document.getElementById("currentUserLabel");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const mainNav = document.getElementById("mainNav");
+
+    if (appData.currentUser) {
+      label.textContent = "Usuario: " + appData.currentUser;
+      logoutBtn.style.display = "inline-block";
+      mainNav.style.display = "flex";
+      switchView("view-movimientos");
+    } else {
+      label.textContent = "No autenticado";
+      logoutBtn.style.display = "none";
+      mainNav.style.display = "none";
+      switchView("view-auth");
+    }
+  }
+
+  function switchView(viewId) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    const view = document.getElementById(viewId);
+    if (view) view.classList.add("active");
+
+    document.querySelectorAll("nav button").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.view === viewId);
+    });
+
+    if (viewId === "view-stock") {
+      renderStockTable();
+    }
+    if (viewId === "view-movimientos") {
+      populateMovementItems();
+    }
+  }
+
+  // ---- AUTENTICACIÓN ----
+  const registerForm = document.getElementById("registerForm");
+  const loginForm = document.getElementById("loginForm");
+  const registerMsg = document.getElementById("registerMsg");
+  const loginMsg = document.getElementById("loginMsg");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  registerForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const user = document.getElementById("regUsername").value.trim();
+    const pass = document.getElementById("regPassword").value;
+
+    if (!user || !pass) {
+      showMessage(registerMsg, "Completa todos los campos.", "error");
+      return;
+    }
+
+    const exists = appData.users.some(u => u.username === user);
+    if (exists) {
+      showMessage(registerMsg, "Ese usuario ya existe.", "error");
+      return;
+    }
+
+    appData.users.push({ username: user, password: pass });
+    appData.currentUser = user;
+    saveData(appData);
+
+    showMessage(loginMsg, "", "ok");
+    updateCurrentUserUI();
+    showMessage(registerMsg, "Usuario creado e iniciado sesión.", "ok");
+    registerForm.reset();
+  });
+
+  loginForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const user = document.getElementById("loginUsername").value.trim();
+    const pass = document.getElementById("loginPassword").value;
+    const found = appData.users.find(u => u.username === user && u.password === pass);
+
+    if (!found) {
+      showMessage(loginMsg, "Usuario o contraseña incorrectos.", "error");
+      return;
+    }
+
+    appData.currentUser = user;
+    saveData(appData);
+    showMessage(loginMsg, "", "ok");
+    updateCurrentUserUI();
+  });
+
+  logoutBtn.addEventListener("click", () => {
+    appData.currentUser = null;
+    saveData(appData);
+    updateCurrentUserUI();
+  });
+
+  // ---- ITEMS: CREAR / EDITAR ----
+  const itemForm = document.getElementById("itemForm");
+  const itemMsg = document.getElementById("itemMsg");
+  const clearItemFormBtn = document.getElementById("clearItemForm");
+  const itemPriceInput = document.getElementById("itemPrice");
+  const itemPriceModeSelect = document.getElementById("itemPriceMode");
+  const itemPriceInfo = document.getElementById("itemPriceInfo");
+
+  let editingItemId = null;
+
+  function updatePricePreview() {
+    const raw = parseFloat(itemPriceInput.value || "0");
+    const mode = itemPriceModeSelect.value;
+    if (!raw || raw <= 0) {
+      itemPriceInfo.textContent = "";
+      return;
+    }
+
+    let net, iva, total;
+    if (mode === "with") {
+      total = raw;
+      net = total / (1 + IVA_RATE);
+      iva = total - net;
+      itemPriceInfo.textContent =
+        `De ${formatCLP(total)} aprox. ${formatCLP(net)} son neto y ${formatCLP(iva)} corresponden al IVA (por 1 unidad).`;
+    } else {
+      net = raw;
+      iva = net * IVA_RATE;
+      total = net + iva;
+      itemPriceInfo.textContent =
+        `Precio neto: ${formatCLP(net)} | IVA aprox: ${formatCLP(iva)} | Total con IVA: ${formatCLP(total)} (por 1 unidad).`;
+    }
+  }
+
+  itemPriceInput.addEventListener("input", updatePricePreview);
+  itemPriceModeSelect.addEventListener("change", updatePricePreview);
+
+  itemForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("itemName").value.trim();
+    const desc = document.getElementById("itemDesc").value.trim();
+    const min = Number(document.getElementById("itemMin").value || 0);
+    const max = Number(document.getElementById("itemMax").value || 0);
+    const initStock = Number(document.getElementById("itemInitStock").value || 0);
+
+    const priceRaw = parseFloat(itemPriceInput.value || "0");
+    const priceMode = itemPriceModeSelect.value;
+
+    if (!name) {
+      showMessage(itemMsg, "El nombre es obligatorio.", "error");
+      return;
+    }
+    if (max > 0 && min > max) {
+      showMessage(itemMsg, "El mínimo no puede ser mayor que el máximo.", "error");
+      return;
+    }
+
+    let priceNet = null, priceIVA = null, priceTotal = null, storedMode = null;
+    if (priceRaw && priceRaw > 0) {
+      storedMode = priceMode;
+      if (priceMode === "with") {
+        priceTotal = priceRaw;
+        priceNet = priceTotal / (1 + IVA_RATE);
+        priceIVA = priceTotal - priceNet;
+      } else {
+        priceNet = priceRaw;
+        priceIVA = priceNet * IVA_RATE;
+        priceTotal = priceNet + priceIVA;
+      }
+    }
+
+    if (editingItemId) {
+      const item = getItemById(editingItemId);
+      if (item) {
+        item.name = name;
+        item.desc = desc;
+        item.min = min;
+        item.max = max;
+        item.stock = initStock;
+        item.priceNet = priceNet;
+        item.priceIVA = priceIVA;
+        item.priceTotal = priceTotal;
+        item.priceMode = storedMode;
+      }
+      showMessage(itemMsg, "Ítem actualizado.", "ok");
+    } else {
+      const newItem = {
+        id: genId(),
+        name,
+        desc,
+        min,
+        max,
+        stock: initStock,
+        code: "IT-" + genId().toUpperCase(),
+        priceNet,
+        priceIVA,
+        priceTotal,
+        priceMode: storedMode,
+        transactions: []
+      };
+      appData.items.push(newItem);
+      showMessage(itemMsg, "Ítem creado.", "ok");
+    }
+
+    saveData(appData);
+    populateMovementItems();
+    renderStockTable();
+    itemForm.reset();
+    itemPriceInfo.textContent = "";
+    editingItemId = null;
+  });
+
+  clearItemFormBtn.addEventListener("click", () => {
+    editingItemId = null;
+    itemForm.reset();
+    itemPriceInfo.textContent = "";
+    showMessage(itemMsg, "", "ok");
+  });
+
+  // ---- MOVIMIENTOS ----
+  const movementItemSelect = document.getElementById("movementItem");
+  const movementForm = document.getElementById("movementForm");
+  const movementMsg = document.getElementById("movementMsg");
+  const openScannerBtn = document.getElementById("openScannerBtn");
+  const closeScannerBtn = document.getElementById("closeScannerBtn");
+
+  function populateMovementItems() {
+    movementItemSelect.innerHTML = "";
+    if (appData.items.length === 0) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No hay ítems. Crea uno primero.";
+      movementItemSelect.appendChild(opt);
+      movementItemSelect.disabled = true;
+    } else {
+      movementItemSelect.disabled = false;
+      appData.items.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.name;
+        movementItemSelect.appendChild(opt);
+      });
+    }
+  }
+
+  function checkAlarms(item) {
+    let msg = "";
+    if (item.stock <= item.min) {
+      msg += `⚠ Stock en o bajo el mínimo (${item.min}). `;
+    }
+    if (item.max > 0 && item.stock >= item.max) {
+      msg += `⚠ Stock en o sobre el máximo (${item.max}). `;
+    }
+    if (msg) {
+      alert("ALERTA para " + item.name + ":\n\n" + msg);
+    }
+  }
+
+  movementForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const itemId = movementItemSelect.value;
+    const type = document.getElementById("movementType").value;
+    const qty = Number(document.getElementById("movementQty").value || 0);
+
+    if (!itemId) {
+      showMessage(movementMsg, "Selecciona un ítem.", "error");
+      return;
+    }
+    if (qty <= 0) {
+      showMessage(movementMsg, "La cantidad debe ser mayor a 0.", "error");
+      return;
+    }
+
+    const item = getItemById(itemId);
+    if (!item) {
+      showMessage(movementMsg, "Ítem no encontrado.", "error");
+      return;
+    }
+
+    if (type === "out" && item.stock < qty) {
+      showMessage(movementMsg, "No hay stock suficiente para realizar el retiro.", "error");
+      return;
+    }
+
+    const movement = {
+      date: new Date().toISOString(),
+      type,
+      qty
+    };
+    item.transactions.push(movement);
+
+    if (type === "in") {
+      item.stock += qty;
+    } else {
+      item.stock -= qty;
+    }
+
+    saveData(appData);
+    showMessage(movementMsg, "Movimiento registrado correctamente.", "ok");
+    movementForm.reset();
+    renderStockTable();
+    checkAlarms(item);
+  });
+
+  // ---- ESCÁNER DE CÓDIGO (QR) ----
+  async function startScanner() {
+    if (scannerRunning) return;
+    const scannerCard = document.getElementById("scannerCard");
+    const scanStatus = document.getElementById("scanStatus");
+    scannerCard.style.display = "block";
+    scanStatus.textContent = "Iniciando cámara...";
+
+    if (!window.Html5Qrcode) {
+      scanStatus.textContent = "No se pudo cargar el lector de códigos.";
+      return;
+    }
+
+    const config = { fps: 10, qrbox: 250 };
+    html5QrCodeInstance = new Html5Qrcode("reader");
+    scannerRunning = true;
+
+    const onScanSuccess = (decodedText) => {
+      const item = appData.items.find(i => i.code === decodedText);
+      if (item) {
+        movementItemSelect.value = item.id;
+        scanStatus.textContent = "Ítem detectado: " + item.name;
+        stopScanner();
+      } else {
+        scanStatus.textContent = "Código leído, pero no corresponde a ningún ítem.";
+      }
+    };
+
+    const onScanFailure = (error) => {
+      // silencioso
+    };
+
+    try {
+      await html5QrCodeInstance.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess,
+        onScanFailure
+      );
+      scanStatus.textContent = "Escaneando... apunta la cámara al código.";
+    } catch (err) {
+      scanStatus.textContent = "No se pudo iniciar la cámara: " + err;
+      scannerRunning = false;
+    }
+  }
+
+  async function stopScanner() {
+    const scannerCard = document.getElementById("scannerCard");
+    const scanStatus = document.getElementById("scanStatus");
+    if (html5QrCodeInstance && scannerRunning) {
+      try {
+        await html5QrCodeInstance.stop();
+        await html5QrCodeInstance.clear();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    scannerRunning = false;
+    scanStatus.textContent = "";
+    scannerCard.style.display = "none";
+  }
+
+  openScannerBtn.addEventListener("click", () => {
+    startScanner();
+  });
+
+  closeScannerBtn.addEventListener("click", () => {
+    stopScanner();
+  });
+
+  window.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopScanner();
+    }
+  });
+
+  // ---- LISTADO DE STOCK + SUGERENCIAS ----
+  const stockTableBody = document.querySelector("#stockTable tbody");
+  const suggestionsList = document.getElementById("suggestionsList");
+
+  function getItemStatus(item) {
+    if (item.stock <= item.min) return "low";
+    if (item.max > 0 && item.stock >= item.max) return "high";
+    return "ok";
+  }
+
+  function computeWeeklySuggestions() {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const suggestions = [];
+
+    appData.items.forEach(item => {
+      if (!item.transactions || item.transactions.length === 0) return;
+
+      const weeklyTx = item.transactions.filter(t => {
+        const d = new Date(t.date);
+        return d >= sevenDaysAgo && d <= now;
+      });
+
+      if (weeklyTx.length === 0) return;
+
+      let inQty = 0;
+      let outQty = 0;
+      weeklyTx.forEach(t => {
+        if (t.type === "in") inQty += t.qty;
+        else if (t.type === "out") outQty += t.qty;
+      });
+
+      const max = item.max || 0;
+      const min = item.min || 0;
+
+      if (max > 0) {
+        if (outQty > max * 0.7) {
+          suggestions.push(
+            `🔼 Considera <strong>aumentar la cantidad máxima</strong> de <strong>${item.name}</strong>. ` +
+            `Retiros últimos 7 días: ${outQty}, máximo actual: ${max}.`
+          );
+        } else if (outQty < max * 0.2 && item.stock < max * 0.3) {
+          suggestions.push(
+            `🔽 Podrías <strong>disminuir la cantidad máxima</strong> de <strong>${item.name}</strong>. ` +
+            `Retiros últimos 7 días: ${outQty}, máximo actual: ${max}.`
+          );
+        }
+      } else {
+        if (outQty > 0 && item.stock <= min) {
+          suggestions.push(
+            `⚠ <strong>${item.name}</strong> se ha movido bastante (retiros: ${outQty}) y está cerca del mínimo (${min}). ` +
+            `Evalúa aumentar stock máximo o frecuencia de reposición.`
+          );
+        }
+      }
+    });
+
+    suggestionsList.innerHTML = "";
+    if (suggestions.length === 0) {
+      const li = document.createElement("li");
+      li.innerHTML = "Por ahora no hay suficientes movimientos en los últimos 7 días para generar sugerencias.";
+      suggestionsList.appendChild(li);
+    } else {
+      suggestions.forEach(text => {
+        const li = document.createElement("li");
+        li.innerHTML = text;
+        suggestionsList.appendChild(li);
+      });
+    }
+  }
+
+  function renderStockTable() {
+    stockTableBody.innerHTML = "";
+    if (appData.items.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.textContent = "No hay ítems registrados.";
+      tr.appendChild(td);
+      stockTableBody.appendChild(tr);
+
+      suggestionsList.innerHTML = "";
+      const li = document.createElement("li");
+      li.innerHTML = "Crea algunos ítems y registra movimientos para ver sugerencias.";
+      suggestionsList.appendChild(li);
+      return;
+    }
+
+    appData.items.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.dataset.id = item.id;
+
+      const tdName = document.createElement("td");
+      tdName.textContent = item.name;
+      if (item.desc) {
+        const span = document.createElement("span");
+        span.className = "badge";
+        span.textContent = item.desc;
+        tdName.appendChild(span);
+      }
+
+      const tdStock = document.createElement("td");
+      tdStock.textContent = item.stock;
+
+      const tdMinMax = document.createElement("td");
+      tdMinMax.textContent = `${item.min} / ${item.max || "-"}`;
+
+      const tdPriceUnit = document.createElement("td");
+      if (item.priceTotal && item.priceTotal > 0) {
+        tdPriceUnit.textContent = formatCLP(item.priceTotal);
+      } else {
+        tdPriceUnit.textContent = "-";
+      }
+
+      const tdTotalValue = document.createElement("td");
+      if (item.priceTotal && item.priceTotal > 0 && item.stock > 0) {
+        const totalValue = item.priceTotal * item.stock;
+        tdTotalValue.textContent = formatCLP(totalValue);
+      } else {
+        tdTotalValue.textContent = "-";
+      }
+
+      const tdStatus = document.createElement("td");
+      const status = getItemStatus(item);
+      const span = document.createElement("span");
+      span.classList.add("status-pill");
+      if (status === "ok") {
+        span.classList.add("status-ok");
+        span.textContent = "OK";
+      } else if (status === "low") {
+        span.classList.add("status-low");
+        span.textContent = "Bajo";
+      } else if (status === "high") {
+        span.classList.add("status-high");
+        span.textContent = "Alto";
+      }
+      tdStatus.appendChild(span);
+
+      tr.appendChild(tdName);
+      tr.appendChild(tdStock);
+      tr.appendChild(tdMinMax);
+      tr.appendChild(tdPriceUnit);
+      tr.appendChild(tdTotalValue);
+      tr.appendChild(tdStatus);
+
+      tr.addEventListener("click", () => openItemChart(item.id));
+
+      stockTableBody.appendChild(tr);
+    });
+
+    computeWeeklySuggestions();
+  }
+
+  // ---- GRÁFICO POR ÍTEM + QR + PRECIOS ----
+  const chartModalOverlay = document.getElementById("chartModalOverlay");
+  const closeChartModalBtn = document.getElementById("closeChartModal");
+  const chartTitle = document.getElementById("chartTitle");
+  const chartSubtitle = document.getElementById("chartSubtitle");
+  const chartCanvas = document.getElementById("itemChart");
+  const qrCodeContainer = document.getElementById("qrCodeContainer");
+  const qrText = document.getElementById("qrText");
+  const priceInfo = document.getElementById("priceInfo");
+
+  function openItemChart(itemId) {
+    const item = getItemById(itemId);
+    if (!item) return;
+
+    const totalIn = item.transactions
+      .filter(t => t.type === "in")
+      .reduce((sum, t) => sum + t.qty, 0);
+    const totalOut = item.transactions
+      .filter(t => t.type === "out")
+      .reduce((sum, t) => sum + t.qty, 0);
+
+    chartTitle.textContent = "Detalle de: " + item.name;
+    chartSubtitle.textContent = `Stock actual: ${item.stock} | Ingresos totales: ${totalIn} | Retiros totales: ${totalOut}`;
+
+    if (currentChart) {
+      currentChart.destroy();
+    }
+
+    currentChart = new Chart(chartCanvas, {
+      type: "bar",
+      data: {
+        labels: ["Ingresos", "Retiros"],
+        datasets: [
+          {
+            label: "Cantidad",
+            data: [totalIn, totalOut]
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
+
+    // QR
+    qrCodeContainer.innerHTML = "";
+    qrText.textContent = "Valor del código: " + item.code;
+    if (window.QRCode) {
+      new QRCode(qrCodeContainer, {
+        text: item.code,
+        width: 128,
+        height: 128
+      });
+    }
+
+    // Info de precios (si existe)
+    if (item.priceTotal && item.priceTotal > 0 && item.priceNet != null && item.priceIVA != null) {
+      const totalStockValue = item.priceTotal * item.stock;
+      priceInfo.textContent =
+        `Precio unitario aprox: Neto ${formatCLP(item.priceNet)} | IVA ${formatCLP(item.priceIVA)} | Total ${formatCLP(item.priceTotal)}. ` +
+        `Valor total del stock (c/IVA): ${formatCLP(totalStockValue)}.`;
+    } else {
+      priceInfo.textContent = "No se ha definido un precio para este ítem.";
+    }
+
+    chartModalOverlay.style.display = "flex";
+  }
+
+  closeChartModalBtn.addEventListener("click", () => {
+    chartModalOverlay.style.display = "none";
+  });
+  chartModalOverlay.addEventListener("click", e => {
+    if (e.target === chartModalOverlay) {
+      chartModalOverlay.style.display = "none";
+    }
+  });
+
+  // ---- NAV ----
+  document.querySelectorAll("nav button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const viewId = btn.dataset.view;
+      switchView(viewId);
+    });
+  });
+
+  // ---- INICIALIZACIÓN ----
+  updateCurrentUserUI();
+  populateMovementItems();
+  renderStockTable();
+</script>
+</body>
+</html>
