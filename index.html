@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Stock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Chart.js para gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Librería para leer QR con la cámara -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
+  <!-- Librería para generar códigos QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>Gestión de Stock</h1>
+  <div class="user-info">
+    <span id="currentUserLabel">No autenticado</span>
+    <button id="logoutBtn" style="display:none;">Cerrar sesión</button>
+  </div>
+</header>
+
+<nav id="mainNav" style="display:none;">
+  <button data-view="view-movimientos" class="active">Ingresos / Retiros</button>
+  <button data-view="view-stock">Listado de Stock</button>
+</nav>
+
+<main>
+  <!-- Vista de autenticación -->
+  <section id="view-auth" class="view active">
+    <div class="card">
+      <h2>Registro</h2>
+      <form id="registerForm">
+        <div>
+          <label for="regUsername">Usuario</label>
+          <input type="text" id="regUsername" required />
+        </div>
+        <div>
+          <label for="regPassword">Contraseña</label>
+          <input type="password" id="regPassword" required />
+        </div>
+        <div class="full-width">
+          <button type="submit" class="btn-primary">Crear usuario</button>
+          <div id="registerMsg" class="msg"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Iniciar sesión</h2>
+      <form id="loginForm">
+        <div>
+          <label for="loginUsername">Usuario</label>
+          <input type="text" id="loginUsername" required />
+        </div>
+        <d
